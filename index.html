@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Spoilage Detection</title>
+</head>
+<body>
+    <h2>Food Spoilage Detection</h2>
+    <video id="video" width="300" height="300" autoplay></video>
+    <canvas id="canvas" width="300" height="300" style="display:none;"></canvas>
+    <button onclick="captureImage()">Capture & Predict</button>
+    <p id="result"></p>
+
+    <script>
+        // Access the webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+            document.getElementById("video").srcObject = stream;
+        });
+
+        function captureImage() {
+            let video = document.getElementById("video");
+            let canvas = document.getElementById("canvas");
+            let context = canvas.getContext("2d");
+
+            context.drawImage(video, 0, 0, 300, 300);
+            canvas.toBlob(function(blob) {
+                let formData = new FormData();
+                formData.append("file", blob, "image.jpg");
+
+                fetch("/predict", {
+                    method: "POST",
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("result").innerText = "Prediction: " + data.prediction;
+                });
+            }, "image/jpeg");
+        }
+    </script>
+</body>
+</html>
